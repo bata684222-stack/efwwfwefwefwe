@@ -10,24 +10,32 @@
   html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;color:var(--txt);
     font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-user-select:none;user-select:none}
   canvas#cv{position:fixed;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;display:block}
-  #panel{position:fixed;left:8px;top:8px;bottom:8px;width:258px;overflow-y:auto;padding:10px;
-    background:var(--panel);border:1px solid var(--line);border-radius:4px;
-    scrollbar-width:thin;scrollbar-color:#2b3347 transparent;transition:transform .2s;z-index:10}
-  #panel.hide{transform:translateX(-274px)}
-  #tog{position:fixed;left:8px;top:8px;z-index:11;height:28px;padding:0 10px;border-radius:4px;border:1px solid var(--line);
-    background:var(--panel);color:var(--txt);font-size:12px;cursor:pointer;display:none}
+  #panel{position:fixed;left:8px;top:8px;bottom:8px;width:272px;overflow-y:auto;padding:10px;
+    background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    scrollbar-width:thin;scrollbar-color:#2b3347 transparent;transition:transform .2s;z-index:10;
+    display:flex;flex-direction:column;gap:6px}
+  #panel.hide{transform:translateX(-290px)}
+  #tog{position:fixed;left:8px;top:8px;z-index:11;height:32px;padding:0 12px;border-radius:5px;border:1px solid var(--line);
+    background:var(--panel);color:#fff;font-weight:600;font-size:12px;cursor:pointer;display:none}
   #panel.hide ~ #tog{display:block}
-  .top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .top-row{display:flex;justify-content:space-between;align-items:center;padding-bottom:6px;border-bottom:1px solid var(--line)}
   .top-row b{font-size:13px;letter-spacing:.5px;color:#fff}
-  #hide{background:none;border:1px solid var(--line);color:var(--dim);cursor:pointer;font-size:11px;padding:2px 6px}
-  h3{margin:10px 0 4px;font-size:10px;letter-spacing:1px;color:var(--dim);font-weight:700;text-transform:uppercase}
-  button{font:inherit;color:var(--txt);background:#151b26;border:1px solid var(--line);border-radius:3px;padding:4px 6px;
+  #hide{background:#151b26;border:1px solid var(--line);color:var(--dim);cursor:pointer;font-size:11px;padding:3px 8px;border-radius:4px}
+  .mode-bar{display:flex;gap:4px;background:#090c12;padding:4px;border-radius:5px;border:1px solid var(--line)}
+  .mode-bar button{flex:1;padding:6px 4px;font-weight:600;font-size:11.5px;border-radius:4px}
+  .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;background:#090c12;padding:3px;border-radius:5px;border:1px solid var(--line)}
+  .tabs button{border:none;background:transparent;color:var(--dim);padding:5px 4px;font-size:11px;font-weight:600;border-radius:3px}
+  .tabs button.on{background:#1c2434;color:#fff}
+  .tab-sec{display:none;flex-direction:column;gap:4px}
+  .tab-sec.on{display:flex}
+  h3{margin:6px 0 2px;font-size:10px;letter-spacing:.8px;color:var(--dim);font-weight:700;text-transform:uppercase}
+  button{font:inherit;color:var(--txt);background:#151b26;border:1px solid var(--line);border-radius:4px;padding:5px 7px;
     font-size:11.5px;cursor:pointer}
   button:hover{background:#1c2434;border-color:#36415c}
   button.on{background:#292118;border-color:var(--acc);color:#fff}
   button.bio-btn{border-color:#4d2530;background:#1f1116}
   button.bio-btn.on{background:#421924;border-color:#d94b68;color:#fff}
-  button.uran-btn{border-color:#2d5432;background:#112115}
+  button.uran-btn{border-color:#2d5432;background:#112115;color:#a8f0b0}
   button.uran-btn.on{background:#1b3d22;border-color:#5cd66f;color:#fff}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:4px}
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
@@ -36,18 +44,18 @@
   .list button small{color:var(--dim);font-size:10px}
   .row{display:flex;gap:4px;flex-wrap:wrap}
   .row button{flex:1;white-space:nowrap}
-  .sw{display:grid;grid-template-columns:1fr 1fr;gap:3px;max-height:156px;overflow-y:auto;padding-right:2px;scrollbar-width:thin}
-  .sw button{display:flex;align-items:center;gap:5px;padding:3px 5px;font-size:11px;text-align:left}
+  .sw{display:grid;grid-template-columns:1fr 1fr;gap:3px;max-height:195px;overflow-y:auto;padding-right:2px;scrollbar-width:thin}
+  .sw button{display:flex;align-items:center;gap:5px;padding:4px 5px;font-size:11px;text-align:left}
   .sw i{width:10px;height:10px;border-radius:2px;flex:none}
-  label{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin:5px 0 2px}
+  label{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin:4px 0 1px}
   label b{color:var(--acc2);font-weight:600;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px}
   input[type=range]{width:100%;accent-color:var(--acc);margin:0;height:16px}
   #hud{position:fixed;right:12px;bottom:12px;font:11px/1.45 ui-monospace,Menlo,Consolas,monospace;color:#b8c0d0;
-    background:rgba(10,13,20,.82);border:1px solid var(--line);padding:6px 8px;border-radius:3px;pointer-events:none}
+    background:rgba(10,13,20,.82);border:1px solid var(--line);padding:6px 8px;border-radius:4px;pointer-events:none}
   #hud span{color:var(--acc2)}
   #fps{position:fixed;right:12px;top:8px;font:11px ui-monospace,monospace;color:#6e778c;pointer-events:none}
   .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:30;display:none;
-    background:#0e121a;border:1px solid var(--line);border-radius:4px;padding:10px 12px;
+    background:#0e121a;border:1px solid var(--line);border-radius:6px;padding:10px 12px;
     box-shadow:0 12px 48px rgba(0,0,0,.85);max-width:96vw;max-height:95vh;overflow-y:auto}
   .modal.open{display:block}
   .modal .edhead{font-size:12px;font-weight:700;color:#fff;margin-bottom:8px;
@@ -57,22 +65,22 @@
   .modal .edhead button.closebtn{margin-left:auto}
   .ed-canvas-wrap{position:relative;display:inline-block;border:1px solid var(--line);background:#06080c}
   #edc,#bldc{cursor:crosshair;touch-action:none;display:block;max-width:100%}
-  .pal-wrap{display:flex;flex-wrap:wrap;gap:3px;margin:6px 0;max-width:780px}
-  .pal-wrap button{display:flex;align-items:center;gap:4px;padding:3px 6px;font-size:11px}
-  .pal-wrap i{width:10px;height:10px;border-radius:2px;flex:none}
+  .pal-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:4px;margin:6px 0;max-width:780px}
+  .pal-wrap button{display:flex;align-items:center;gap:5px;padding:5px 7px;font-size:11px;text-align:left}
+  .pal-wrap i{width:11px;height:11px;border-radius:2px;flex:none}
   .bldr-bar{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin:5px 0}
   .bldr-bar .sep{width:1px;height:18px;background:var(--line)}
   .sz-pills{display:flex;gap:3px}
-  .sz-pills button{padding:2px 6px;font-size:10.5px;min-width:24px}
+  .sz-pills button{padding:3px 6px;font-size:10.5px;min-width:24px}
   .proj-prev-box{display:flex;align-items:center;justify-content:space-between;background:#090c12;border:1px solid var(--line);
-    border-radius:3px;padding:4px 6px;margin-top:4px}
+    border-radius:4px;padding:4px 6px;margin-top:2px}
   .proj-prev-box span{font-size:10.5px;color:var(--dim)}
   #replayBar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:20;display:none;
-    background:#0e121a;border:1px solid var(--line);border-radius:4px;padding:7px 10px;min-width:320px;max-width:92vw;
+    background:#0e121a;border:1px solid var(--line);border-radius:5px;padding:7px 10px;min-width:320px;max-width:92vw;
     align-items:center;gap:8px;font-size:11.5px}
   #replayBar.open{display:flex}
   input[type=text]{background:#090c12;border:1px solid var(--line);color:var(--txt);padding:4px 6px;font-size:11px;border-radius:3px}
-  @media (max-width:640px){#panel{width:210px}}
+  @media (max-width:640px){#panel{width:225px}}
 </style>
 </head>
 <body>
@@ -81,81 +89,115 @@
 <div id="panel">
   <div class="top-row">
     <b>ПОЛИГОН</b>
-    <button id="hide">Скрыть</button>
+    <div style="display:flex;gap:4px">
+      <button id="pause">Пауза</button>
+      <button id="reset">Сброс</button>
+      <button id="hide">Скрыть</button>
+    </div>
   </div>
 
-  <h3>Сцены</h3>
-  <div class="grid2" id="scenes"></div>
-
-  <h3>Объекты на карту</h3>
-  <div class="row" style="margin-bottom:4px">
-    <button id="spMan" class="bio-btn">Манекен</button>
-  </div>
-  <div class="grid2" id="stamps"></div>
-
-  <h3>Снаряд</h3>
-  <div class="list" id="projs"></div>
-  <div class="proj-prev-box">
-    <span id="projDimTxt">Размер: —</span>
-    <canvas id="projPrevCv" width="110" height="44"></canvas>
-  </div>
-  <label>Масштаб снаряда <b id="pscalev">100%</b></label>
-  <input type="range" id="pscalerng" min="50" max="160" step="10" value="100">
-  <label>Скорость <b id="spdv"></b></label>
-  <input type="range" id="spd" min="600" max="4200" step="50" value="2500">
-  <div class="row" style="margin-top:4px">
-    <button id="edopen">Редактор снаряда</button>
-    <button id="replayBtn">Повтор полёта</button>
+  <!-- Быстрое переключение режима и сцен -->
+  <div class="mode-bar">
+    <button id="quickFire" class="on">Режим: Выстрел</button>
+    <button id="clear">Очистить карту</button>
   </div>
 
-  <h3>Инструменты постройки</h3>
-  <div class="row" style="margin-bottom:4px">
-    <button id="bldopen">Редактор построек</button>
-  </div>
-  <div class="grid3" id="drawtools">
-    <button data-dt="paint">Кисть</button>
-    <button data-dt="plate">Плита</button>
-    <button data-dt="fill">Заливка</button>
-    <button data-dt="line">Линия</button>
-    <button data-dt="rect">Блок</button>
-    <button data-dt="box">Рамка</button>
-    <button data-dt="erase">Ластик</button>
+  <div class="tabs" id="mainTabs">
+    <button data-tab="tCombat" class="on">Бой и Сцены</button>
+    <button data-tab="tBuild">Постройка</button>
+    <button data-tab="tView">Вид и Время</button>
   </div>
 
-  <label>Толщина / Размер <b id="brv">4 (7 кл.)</b></label>
-  <input type="range" id="br" min="1" max="22" value="4">
-  <div class="sz-pills" id="brpills" style="margin-top:3px">
-    <button data-sz="1">1</button>
-    <button data-sz="2">2</button>
-    <button data-sz="4" class="on">4</button>
-    <button data-sz="7">7</button>
-    <button data-sz="12">12</button>
-    <button data-sz="18">18</button>
+  <!-- ВКЛАДКА 1: БОЙ И СЦЕНЫ -->
+  <div class="tab-sec on" id="tCombat">
+    <h3>Сцены</h3>
+    <div class="grid2" id="scenes"></div>
+
+    <h3>Объекты на карту</h3>
+    <div class="row">
+      <button id="spMan" class="bio-btn">Манекен</button>
+      <button id="bldopen">Редактор построек</button>
+    </div>
+    <div class="grid2" id="stamps"></div>
+
+    <h3>Снаряд</h3>
+    <div class="list" id="projs"></div>
+    <div class="proj-prev-box">
+      <span id="projDimTxt">Размер: —</span>
+      <canvas id="projPrevCv" width="110" height="44"></canvas>
+    </div>
+    <label>Масштаб снаряда <b id="pscalev">100%</b></label>
+    <input type="range" id="pscalerng" min="50" max="160" step="10" value="100">
+    <label>Скорость <b id="spdv"></b></label>
+    <input type="range" id="spd" min="600" max="4200" step="50" value="2500">
+    <div class="row" style="margin-top:2px">
+      <button id="edopen">Редактор снаряда</button>
+      <button id="replayBtn">Повтор полёта</button>
+    </div>
   </div>
-  <div class="row" style="margin-top:4px">
-    <button id="bsh">Форма: Круг</button>
-    <button id="pinbtn">Опора: Авто</button>
+
+  <!-- ВКЛАДКА 2: ПОСТРОЙКА И БЛОКИ -->
+  <div class="tab-sec" id="tBuild">
+    <h3>Инструменты</h3>
+    <div class="grid3" id="drawtools">
+      <button data-dt="paint">Кисть</button>
+      <button data-dt="plate">Плита</button>
+      <button data-dt="fill">Заливка</button>
+      <button data-dt="line">Линия</button>
+      <button data-dt="rect">Блок</button>
+      <button data-dt="box">Рамка</button>
+      <button data-dt="erase">Ластик</button>
+    </div>
+
+    <label>Толщина / Размер <b id="brv">4 (7 кл.)</b></label>
+    <input type="range" id="br" min="1" max="22" value="4">
+    <div class="sz-pills" id="brpills">
+      <button data-sz="1">1</button>
+      <button data-sz="2">2</button>
+      <button data-sz="4" class="on">4</button>
+      <button data-sz="7">7</button>
+      <button data-sz="12">12</button>
+      <button data-sz="18">18</button>
+    </div>
+    <div class="row" style="margin-top:2px">
+      <button id="bsh">Форма: Круг</button>
+      <button id="pinbtn">Опора: Авто</button>
+    </div>
+
+    <h3>Материалы блоков</h3>
+    <div class="row" style="margin-bottom:3px">
+      <button id="quickUran" class="uran-btn">Уран-235 (ядерный блок)</button>
+    </div>
+    <div class="sw" id="mats"></div>
   </div>
 
-  <label style="margin-top:6px">Материалы блоков</label>
-  <div class="sw" id="mats"></div>
+  <!-- ВКЛАДКА 3: ВИД, КАМЕРА, ВРЕМЯ -->
+  <div class="tab-sec" id="tView">
+    <h3>Замедление времени</h3>
+    <label>Скорость времени <b id="tsv">0.50x</b></label>
+    <input type="range" id="tsrng" min="0.02" max="1.00" step="0.02" value="0.50">
+    <div class="grid3" style="margin-top:2px">
+      <button data-ts="0.10">0.1x</button>
+      <button data-ts="0.50">0.5x</button>
+      <button data-ts="1.00">1.0x</button>
+    </div>
 
-  <h3>Режим отображения</h3>
-  <div class="grid2" id="views"></div>
-  <div class="row" style="margin-top:4px"><button id="glowbtn" class="on">Свечение: Вкл</button></div>
-  <label>Яркость свечения <b id="glowv">22%</b></label>
-  <input type="range" id="glowrng" min="0" max="100" step="2" value="22">
+    <h3>Режим отображения</h3>
+    <div class="grid2" id="views"></div>
+    <div class="row" style="margin-top:2px">
+      <button id="glowbtn" class="on">Свечение: Вкл</button>
+      <button id="snd">Звук: Вкл</button>
+    </div>
+    <label>Яркость свечения <b id="glowv">22%</b></label>
+    <input type="range" id="glowrng" min="0" max="100" step="2" value="22">
 
-  <h3>Камера</h3>
-  <div class="row"><button id="zin">Приблизить</button><button id="zout">Отдалить</button><button id="zreset">Сброс 1:1</button></div>
-
-  <h3>Замедление времени</h3>
-  <label>Скорость времени <b id="tsv">0.50x</b></label>
-  <input type="range" id="tsrng" min="0.02" max="1.00" step="0.02" value="0.50">
-  <div class="row" style="margin-top:4px"><button id="pause">Пауза</button><button id="snd">Звук: Вкл</button></div>
-
-  <h3>Сцена</h3>
-  <div class="row"><button id="reset">Перезапуск</button><button id="clear">Очистить</button></div>
+    <h3>Камера</h3>
+    <div class="row">
+      <button id="zin">Приблизить</button>
+      <button id="zout">Отдалить</button>
+      <button id="zreset">Сброс 1:1</button>
+    </div>
+  </div>
 </div>
 <button id="tog">Меню</button>
 
@@ -182,6 +224,7 @@
     <button data-et="rect">Блок</button>
     <button data-et="box">Рамка</button>
     <button data-et="erase">Ластик</button>
+    <button id="edUranBtn" class="uran-btn">Уран-235</button>
     <div class="sep"></div>
     <button id="edundo">Отмена</button>
     <button id="edmirror">Повернуть</button>
@@ -221,6 +264,7 @@
     <button data-bt="circle">Круг</button>
     <button data-bt="mannequin" class="bio-btn">Манекен</button>
     <button data-bt="erase">Ластик</button>
+    <button id="bldUranBtn" class="uran-btn">Уран-235</button>
     <div class="sep"></div>
     <button id="bldshape">Квадрат</button>
     <button id="bldundo">Отмена</button>
@@ -329,14 +373,13 @@ for(let m=0;m<MAT.length;m++){
 const MU=new Float32Array(MAT.map(m=>m.mu));
 const MELT=MAT.map(m=>m.melt);
 
-// Материалы для блоков построек (включая Уран-235)
+// Материалы для блоков построек и редакторов (Уран-235 поставлен на видное место в начале списка)
 const PAINT_MATS=[
-  M.CONC,M.BRICK,M.OAK,M.GLASS,M.STEEL,M.HHA,M.ALU,M.TI,M.W,M.CER,M.SIC,M.CU,M.BRASS,M.RUB,
-  M.EXP,M.CMPB,M.C4,M.FUEL,M.URAN,M.WATER,
+  M.URAN,M.CONC,M.BRICK,M.STEEL,M.HHA,M.OAK,M.GLASS,M.ALU,M.TI,M.W,M.CER,M.SIC,M.CU,M.BRASS,M.RUB,
+  M.EXP,M.CMPB,M.C4,M.FUEL,M.WATER,
   M.BONE,M.FLESH,M.BRAIN,M.HEART,M.GUTS,M.BLOOD
 ];
-// Материалы для редактора снарядов (БЕЗ Урана-235 по требованию)
-const PROJ_MATS=PAINT_MATS.filter(m=>m!==M.URAN);
+const PROJ_MATS=PAINT_MATS;
 
 /* ================= ТАБЛИЦЫ ЦВЕТА И СВЕЧЕНИЯ ================= */
 const HEAT_BINS=64, HEAT_CSS=new Array(HEAT_BINS), HEAT_SOLID_BIN=24;
@@ -515,7 +558,6 @@ function gas(x,y,ax,ay,life,size,kind){
 }
 
 const flashes=[];
-const shockRings=[]; // Красивые расширяющиеся ударные волны от взрывов
 
 function blastSmoke(x,y,power){
   const pw=Math.min(2.2,power);
@@ -531,13 +573,10 @@ function blastSmoke(x,y,power){
   }
 }
 function addBlastFx(x,y,power,isUran){
-  if(flashes.length<28){
-    flashes.push({x,y,rad:18+18*power,life:1.0,decay:isUran?0.09:0.16,uran:!!isUran});
+  if(flashes.length<24){
+    flashes.push({x,y,rad:16+16*power,life:1.0,decay:isUran?0.10:0.17,uran:!!isUran});
   }
-  if(shockRings.length<18&&(power>0.7||Math.random()<0.35)){
-    shockRings.push({x,y,r:4,maxR:(isUran?95:48)*Math.min(2.2,power),life:1.0,uran:!!isUran});
-  }
-  camShake=Math.min(12,camShake+1.1*power);
+  camShake=Math.min(10,camShake+0.9*power);
   blastSmoke(x,y,power);
 }
 
@@ -1142,7 +1181,7 @@ const SCENES={
 const PCH={
   S:M.STEEL,B:M.BRASS,W:M.W,E:M.EXP,C:M.CU,L:M.LEAD,T:M.TI,
   A:M.ALU,H:M.HHA,D:M.ALUM,K:M.SIC,Q:M.CMPB,N:M.C4,R:M.RUB,O:M.OAK,U:M.WATER,G:M.GLASS,V:M.CER,M:M.CONC,
-  Z:M.BRICK,J:M.BONE,P:M.FLESH,I:M.BRAIN,Y:M.HEART,X:M.GUTS,F:M.FUEL
+  Z:M.BRICK,J:M.BONE,P:M.FLESH,I:M.BRAIN,Y:M.HEART,X:M.GUTS,F:M.FUEL,'2':M.URAN
 };
 const MAT2CH={};for(const ch in PCH)MAT2CH[PCH[ch]]=ch;
 
@@ -1494,12 +1533,16 @@ function hashBuild(list,n,Start,Fill,Items,Cell,useQ,onlySleep){
 }
 
 function solveBonds(dt){
+  const heavyLoad=actBCount>2200;
   for(let t=0;t<actBCount;t++){
     const k=actB[t];if(!bAlive[k])continue;
     const a=bA[k],b=bB[k];
     const dx=qx[b]-qx[a],dy=qy[b]-qy[a],d2=dx*dx+dy*dy;
     if(d2<1e-12)continue;
-    const d=Math.sqrt(d2),L0=bL0[k];
+    const L0=bL0[k];
+    // Быстрый пропуск почти не деформированных связей при большой нагрузке (убирает лаги при изгибе и падении)
+    if(heavyLoad&&Math.abs(d2-bRest[k]*bRest[k])<0.04)continue;
+    const d=Math.sqrt(d2);
     const ma=pm[a],mb=pm[b];
     const metal=isMetal(ma)||isMetal(mb);
     const tm=(T[a]+T[b])*.5;
@@ -1531,20 +1574,26 @@ function solveBonds(dt){
     if(w<1e-9)continue;
     const kk=bK[k]*stiffSoft;
     const dvx=(qx[b]-px[b])-(qx[a]-px[a]),dvy=(qy[b]-py[b])-(qy[a]-py[a]);
-    const damp=((dvx*dx+dvy*dy)/d2)*0.48;
+    // Усиленное демпфирование при изгибе и падении конструкций (быстро гасит пружинящие колебания)
+    const dampRate=(suppVis[a]&&suppVis[b])?0.70:0.58;
+    const damp=((dvx*dx+dvy*dy)/d2)*dampRate;
     const f=(c*kk/d+damp)/w;
     const dxa=dx*f*wa,dya=dy*f*wa,dxb=dx*f*wb,dyb=dy*f*wb;
     qx[a]+=dxa;qy[a]+=dya;qx[b]-=dxb;qy[b]-=dyb;
 
     if(c<0){const pI=-c*kk/w*.5;pres[a]+=pI;pres[b]+=pI;}
     const s=(c<0?-c:c)/rest;if(s>str[a])str[a]=s;if(s>str[b])str[b]=s;
-    // Повышен порог пробуждения соседей (0.012 вместо 0.0001), что полностью устраняет лаги при пробитии металла!
-    if(awake[a]===0&&dxa*dxa+dya*dya>0.012)wake(a);
-    if(awake[b]===0&&dxb*dxb+dyb*dyb>0.012)wake(b);
+    if(awake[a]===0&&dxa*dxa+dya*dya>0.055)wake(a);
+    if(awake[b]===0&&dxb*dxb+dyb*dyb>0.055)wake(b);
   }
 }
 
 function pair(a,b,dt,stat){
+  // Пропуск самостолкновений внутри одного гнущегося или падающего куска конструкции (радиус 2 клетки)
+  if(deg[a]>=2&&deg[b]>=2&&!((flg[a]|flg[b])&PROJ)){
+    const odx=ox0[a]-ox0[b],ody=oy0[a]-oy0[b];
+    if(odx>=-SP*2.1&&odx<=SP*2.1&&ody>=-SP*2.1&&ody<=SP*2.1)return;
+  }
   let dx=qx[b]-qx[a],dy=qy[b]-qy[a];
   const d2=dx*dx+dy*dy;
   if(d2>=RC2)return;
@@ -1569,34 +1618,36 @@ function pair(a,b,dt,stat){
 
   const pI=ov/w*.6;pres[a]+=pI;pres[b]+=pI;
   const vt=tl/dt;
-  if(rn>2.2||vt>3.5){
+  if(rn>2.5||vt>4.0){
     const ma=pm[a],mb=pm[b],bio=isBio(ma)||isBio(mb);
-    const eNorm=rn>2.2?0.5*(rn-2.2)*(rn-2.2)/w*0.013:0;
-    const eFric=vt>3.5?(vt-3.5)*ov*mu/w*0.024:0;
+    const eNorm=rn>2.5?0.5*(rn-2.5)*(rn-2.5)/w*0.013:0;
+    const eFric=vt>4.0?(vt-4.0)*ov*mu/w*0.022:0;
     const e=eNorm+eFric;
     hitE+=e;
     if(!bio){
       T[a]=Math.min(1.75,T[a]+Math.min(0.35,e*0.48*wa));
       T[b]=Math.min(1.75,T[b]+Math.min(0.35,e*0.48*wb));
-    }else if(rn>4.5&&sparkN<MAXS*.85&&Math.random()<0.28){
+    }else if(rn>4.8&&sparkN<MAXS*.80&&Math.random()<0.25){
       spark((qx[a]+qx[b])*.5,(qy[a]+qy[b])*.5,(Math.random()-.5)*4.2,(Math.random()-.5)*4.2-1,26+Math.random()*28,1.2+Math.random()*0.8,1);
     }
-    if(rn>4.8&&(isEX(ma)||isEX(mb))){
+    if(rn>5.0&&(isEX(ma)||isEX(mb))){
       if(isEX(ma))igniteE(a,1);
       if(isEX(mb))igniteE(b,1);
     }
     const vComb=rn+vt*0.6;
-    if(!bio&&vComb>9.5&&sparkN<MAXS*.82&&Math.random()<.05){
+    if(!bio&&vComb>10.5&&sparkN<MAXS*.78&&Math.random()<.04){
       const sx=(qx[a]+qx[b])*.5,sy=(qy[a]+qy[b])*.5;
       const tangX=tl>1e-5?tx/tl:0,tangY=tl>1e-5?ty/tl:0;
       spark(sx,sy,-nx*rn*.11+tangX*vt*.15+(Math.random()-.5)*3.0,-ny*rn*.11+tangY*vt*.15+(Math.random()-.5)*3.0,18+Math.random()*24,1.0+Math.random()*0.9,0);
     }
   }
-  if(stat&&(ov>0.26||cb*cb>0.015))wake(b);
+  if(stat&&(ov>0.42||cb*cb>0.045))wake(b);
 }
 
 function solveCollisions(dt){
-  for(let k=0;k<actCount;k++){
+  const stride=(actCount>2400&&projs.length===0)?2:1;
+  const offset=stepCounter&1;
+  for(let k=(stride===2?offset:0);k<actCount;k+=stride){
     const a=act[k];if(!(flg[a]&ALIVE))continue;
     let cx=(qx[a]/CELL)|0,cy=(qy[a]/CELL)|0;
     if(cx<0)cx=0;else if(cx>=GX)cx=GX-1;
@@ -1615,7 +1666,7 @@ function solveCollisions(dt){
   }
 }
 
-function substep(dt){
+function substep(dt,iters){
   const n=actCount;
   for(let k=0;k<n;k++){
     const i=act[k];
@@ -1626,13 +1677,13 @@ function substep(dt){
     let g;
     if(flg[i]&PROJ)g=GRAV_PROJ;
     else if(deg[i]===0)g=GRAV;
-    else if(!suppVis[i])g=GRAV_STRUCT; // Падают только реально оторванные от опоры куски
-    else g=0; // Опирающиеся части здания держатся и не падают!
+    else if(!suppVis[i])g=GRAV_STRUCT;
+    else g=0;
     if(g)vy[i]+=g*dt;
     qx[i]=px[i]+vx[i]*dt;qy[i]=py[i]+vy[i]*dt;
   }
   hashBuild(act,n,dStart,dFill,dItems,dCell,true,false);
-  for(let it=0;it<ITER;it++){
+  for(let it=0;it<iters;it++){
     solveBonds(dt);
     solveCollisions(dt);
   }
@@ -1644,11 +1695,13 @@ function substep(dt){
     }
     let nvx=(qx[i]-px[i])/dt,nvy=(qy[i]-py[i])/dt;
     let s2=nvx*nvx+nvy*nvy;
-    // Устойчивое гашение колебаний для опирающихся построек, чтобы здание стояло монолитно
+    // Быстрое затухание мелких колебаний при изгибе и падении для высокой производительности
     if(!(flg[i]&PROJ)&&deg[i]>=2&&suppVis[i]){
-      const damp=s2<0.6?0.65:0.93;nvx*=damp;nvy*=damp;
+      const damp=s2<0.85?0.52:0.88;nvx*=damp;nvy*=damp;
+    }else if(!(flg[i]&PROJ)&&!suppVis[i]&&py[i]>WH-35){
+      nvx*=0.82;nvy*=0.82;
     }else{
-      const fr=deg[i]===0?.012:.005,damp=1-fr*dt;nvx*=damp;nvy*=damp;
+      const fr=deg[i]===0?.014:.006,damp=1-fr*dt;nvx*=damp;nvy*=damp;
     }
     s2=nvx*nvx+nvy*nvy;
     if(s2>1600){const s=40/Math.sqrt(s2);nvx*=s;nvy*=s;s2=1600;}
@@ -1656,10 +1709,10 @@ function substep(dt){
     if(ny>WH-WALL_R){
       ny=WH-WALL_R;
       const mu=MU[pm[i]];
-      if(nvy>0)nvy=-nvy*(0.24-mu*0.20);
-      if(Math.abs(nvy)<0.28)nvy=0;
-      nvx*=(1-mu*0.42);
-      if(Math.abs(nvx)<0.06)nvx=0;
+      if(nvy>0)nvy=-nvy*(0.20-mu*0.16);
+      if(Math.abs(nvy)<0.35)nvy=0;
+      nvx*=(1-mu*0.48);
+      if(Math.abs(nvx)<0.08)nvx=0;
     }
     if(ny<WALL_R){ny=WALL_R;if(nvy<0)nvy=-nvy*0.3;}
     if(nx<WALL_R){nx=WALL_R;if(nvx<0)nvx=-nvx*0.35;}
@@ -1686,17 +1739,26 @@ function compactAct(){
 
 function stepFrame(){
   stepCounter++;
-  if(supportDirty&&(stepCounter%6===0))updateSupport(true);
+  if(supportDirty&&(stepCounter%8===0))updateSupport(true);
   compactAct();
   updateProjectiles();
   recordFlightStep();
-  hashBuild(null,nP,sStart,sFill,sItems,sCell,false,true);
+  if(actCount>0&&(projs.length>0||stepCounter%4===0)){
+    hashBuild(null,nP,sStart,sFill,sItems,sCell,false,true);
+  }
   rebuildActB();
   brkF=0;hitE=0;detF=0;
-  // Оптимизированное число подшагов (3..6) для высокой производительности при пробитии брони
-  let n=Math.ceil(maxSp*ts/2.1);n=n<3?3:n>6?6:n;
+  let n, iters;
+  if(projs.length>0||maxSp>14){
+    n=Math.ceil(maxSp*ts/2.4);
+    n=n<2?2:n>4?4:n;
+    iters=actCount>1800?1:ITER;
+  }else{
+    n=actCount>900?1:2;
+    iters=1;
+  }
   const dt=ts/n;
-  for(let s=0;s<n;s++)substep(dt);
+  for(let s=0;s<n;s++)substep(dt,iters);
   postFrame(n);
 }
 
@@ -1716,9 +1778,9 @@ function postFrame(n){
   for(let i=0;i<nP;i++){
     if(!(flg[i]&ALIVE))continue;
 
-    // Автоматическое удаление осколков и мусора на полу через 2 секунды (120 кадров)
-    const isDebris=(!isPinned[i])&&(deg[i]<=1||(!suppVis[i]&&py[i]>WH-26)||(flg[i]&LIQ));
-    if(isDebris&&py[i]>WH-30){
+    // Автоматическое удаление осколков, упавших секций и мусора на полу через 2 секунды (120 кадров)
+    const isDebris=(!isPinned[i])&&(deg[i]<=1||(!suppVis[i]&&py[i]>WH-42)||(flg[i]&LIQ));
+    if(isDebris&&py[i]>WH-42){
       floorT[i]++;
       if(floorT[i]>=FLOOR_DESPAWN_FRAMES){
         kill(i);
@@ -1766,7 +1828,9 @@ function postFrame(n){
   for(let k=0;k<actCount;k++){
     const i=act[k];if(!(flg[i]&ALIVE))continue;
     const s2=vx[i]*vx[i]+vy[i]*vy[i];
-    if(s2>.0025)awake[i]=SLEEPF;
+    // Быстрое усыпление слегка покачивающихся при изгибе блоков
+    const sleepThr=(deg[i]>=2&&suppVis[i])?0.012:0.0035;
+    if(s2>sleepThr)awake[i]=SLEEPF;
     else if(deg[i]===0&&py[i]<WH-WALL_R-4)awake[i]=SLEEPF;
     else if(--awake[i]<=0){awake[i]=0;vx[i]=vy[i]=0;qx[i]=px[i];qy[i]=py[i];}
   }
@@ -1848,12 +1912,6 @@ function postFrame(n){
     const fl=flashes[i];
     fl.life-=fl.decay*dtf;
     if(fl.life<=0)flashes.splice(i,1);
-  }
-  for(let i=shockRings.length-1;i>=0;i--){
-    const sr=shockRings[i];
-    sr.r+=(sr.maxR-sr.r)*0.22*dtf+2.2*dtf;
-    sr.life-=0.065*dtf;
-    if(sr.life<=0||sr.r>=sr.maxR)shockRings.splice(i,1);
   }
   camShake*=0.84;
   if(camShake<0.05)camShake=0;
@@ -2077,17 +2135,7 @@ function drawSparksAndExplosions(){
     ctx.fill();
   }
 
-  // Расширяющиеся ударные кольца взрывов (Mach shockwave rings)
-  for(let i=0;i<shockRings.length;i++){
-    const sr=shockRings[i];
-    ctx.strokeStyle=sr.uran
-      ?'rgba(140,255,150,'+(sr.life*0.55).toFixed(3)+')'
-      :'rgba(255,220,175,'+(sr.life*0.42).toFixed(3)+')';
-    ctx.lineWidth=1.4+sr.life*2.2;
-    ctx.beginPath();ctx.arc(sr.x,sr.y,sr.r,0,6.2832);ctx.stroke();
-  }
-
-  // Мягкие вспышки детонации (уменьшенное свечение)
+  // Мягкие вспышки детонации без колец
   ctx.globalCompositeOperation='lighter';
   for(let i=0;i<flashes.length;i++){
     const fl=flashes[i],r=fl.rad*(1.2-0.2*fl.life);
@@ -2538,9 +2586,16 @@ function setBrushSize(v){
 function refreshActive(){
   document.querySelectorAll('#projs button').forEach((b,i)=>b.classList.toggle('on',tool==='fire'&&i===curProj));
   document.querySelectorAll('#mats button').forEach(b=>b.classList.toggle('on',(tool==='paint'||tool==='plate'||tool==='fill'||tool==='line'||tool==='rect'||tool==='box')&&+b.dataset.m===curMat));
+  const qu=$('quickUran');
+  if(qu)qu.classList.toggle('on',(tool==='paint'||tool==='plate'||tool==='fill'||tool==='line'||tool==='rect'||tool==='box')&&curMat===M.URAN);
   document.querySelectorAll('#drawtools button').forEach(b=>b.classList.toggle('on',tool===b.dataset.dt));
   $('spMan').classList.toggle('on',tool==='stamp'&&stampType==='mannequin');
   document.querySelectorAll('#stamps button').forEach(b=>b.classList.toggle('on',tool==='stamp'&&stampType===b.dataset.st));
+  const qf=$('quickFire');
+  if(qf){
+    qf.classList.toggle('on',tool==='fire');
+    qf.textContent=tool==='fire'?'Режим: Выстрел':'Вернуться к стрельбе';
+  }
   updateProjPreview();
 }
 
@@ -2549,7 +2604,7 @@ function resetAll(){
   nP=0;nB=0;freePTop=0;freeBTop=0;actCount=0;actBCount=0;pendCount=0;projs=[];
   occ.fill(-1);flg.fill(0,0,MAXP);awake.fill(0);home.fill(-1);isPinned.fill(0);suppVis.fill(0);wasSupp.fill(0);floorT.fill(0);
   pb.fill(-1);bAlive.fill(0);bAct.fill(0);
-  sparkN=0;gasN=0;sl.fill(0);gl.fill(0);flashes.length=0;shockRings.length=0;camShake=0;
+  sparkN=0;gasN=0;sl.fill(0);gl.fill(0);flashes.length=0;camShake=0;
   detCount=0;peakT=0;maxT=0;maxSp=0;shotFrames=-1;pScale=1;supportDirty=true;
 }
 function loadScene(name){
@@ -2639,6 +2694,10 @@ function saveBuildingToStorage(name,cells){
     };
     ml.appendChild(b);
   }
+  $('quickUran').onclick=()=>{
+    if(tool==='fire'||tool==='erase'||tool==='stamp')tool='paint';
+    curMat=M.URAN;refreshActive();
+  };
 
   document.querySelectorAll('#drawtools button').forEach(b=>{
     b.onclick=()=>{tool=b.dataset.dt;refreshActive();};
@@ -2650,6 +2709,18 @@ function saveBuildingToStorage(name,cells){
   [['Материал',0],['Давление',1],['Напряжение',2],['Тепло',3]].forEach(([lbl,i])=>{
     const b=document.createElement('button');b.textContent=lbl;b.dataset.v=i;
     b.onclick=()=>setView(i);$('views').appendChild(b);
+  });
+
+  // Переключение вкладок панели
+  document.querySelectorAll('#mainTabs button').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('#mainTabs button').forEach(b=>b.classList.toggle('on',b===btn));
+      document.querySelectorAll('.tab-sec').forEach(sec=>sec.classList.toggle('on',sec.id===btn.dataset.tab));
+    };
+  });
+  $('quickFire').onclick=()=>{tool='fire';refreshActive();};
+  document.querySelectorAll('button[data-ts]').forEach(btn=>{
+    btn.onclick=()=>setTs(+btn.dataset.ts);
   });
 })();
 
@@ -2879,16 +2950,27 @@ addEventListener('pointerup',()=>{
   const pal=$('edpal');
   for(const m of PROJ_MATS){
     const b=document.createElement('button');
+    b.dataset.em=m;
+    if(isBio(m))b.classList.add('bio-btn');
+    if(m===M.URAN)b.classList.add('uran-btn');
     b.innerHTML='<i style="background:rgb('+MAT[m].c.join(',')+')"></i>'+MAT[m].n;
     if(m===edMat)b.classList.add('on');
     b.onclick=()=>{
       edMat=m;if(edTool==='erase')edTool='brush';
       document.querySelectorAll('#edpal button').forEach(x=>x.classList.toggle('on',x===b));
+      $('edUranBtn').classList.toggle('on',edMat===M.URAN);
       document.querySelectorAll('#edtools button[data-et]').forEach(x=>x.classList.toggle('on',x.dataset.et===edTool));
       edDraw();
     };
     pal.appendChild(b);
   }
+  $('edUranBtn').onclick=()=>{
+    edMat=M.URAN;if(edTool==='erase')edTool='brush';
+    document.querySelectorAll('#edpal button').forEach(x=>x.classList.toggle('on',+x.dataset.em===M.URAN));
+    $('edUranBtn').classList.add('on');
+    document.querySelectorAll('#edtools button[data-et]').forEach(x=>x.classList.toggle('on',x.dataset.et===edTool));
+    edDraw();
+  };
   document.querySelectorAll('#edtools button[data-et]').forEach(b=>{
     b.onclick=()=>{
       edTool=b.dataset.et;
@@ -3137,6 +3219,7 @@ bldc.addEventListener('pointerup',()=>{
   const pal=$('bldpal');
   for(const m of PAINT_MATS){
     const b=document.createElement('button');
+    b.dataset.bm=m;
     if(isBio(m))b.classList.add('bio-btn');
     if(m===M.URAN)b.classList.add('uran-btn');
     b.innerHTML='<i style="background:rgb('+MAT[m].c.join(',')+')"></i>'+MAT[m].n;
@@ -3145,11 +3228,20 @@ bldc.addEventListener('pointerup',()=>{
       bldMat=m;
       if(bldTool==='erase')bldTool='brush';
       document.querySelectorAll('#bldpal button').forEach(x=>x.classList.toggle('on',x===b));
+      $('bldUranBtn').classList.toggle('on',bldMat===M.URAN);
       document.querySelectorAll('#bldtools button[data-bt]').forEach(x=>x.classList.toggle('on',x.dataset.bt===bldTool));
       bldUpdateBadge();
     };
     pal.appendChild(b);
   }
+  $('bldUranBtn').onclick=()=>{
+    bldMat=M.URAN;
+    if(bldTool==='erase')bldTool='brush';
+    document.querySelectorAll('#bldpal button').forEach(x=>x.classList.toggle('on',+x.dataset.bm===M.URAN));
+    $('bldUranBtn').classList.add('on');
+    document.querySelectorAll('#bldtools button[data-bt]').forEach(x=>x.classList.toggle('on',x.dataset.bt===bldTool));
+    bldUpdateBadge();
+  };
   document.querySelectorAll('#bldtools button[data-bt]').forEach(b=>{
     b.onclick=()=>{
       bldTool=b.dataset.bt;
