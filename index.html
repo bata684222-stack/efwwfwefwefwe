@@ -399,7 +399,7 @@ let maxSp=0,maxT=0,peakT=0,pScale=1,detCount=0,simT=0,lastShotSpeed=0,shotFrames
 let brkF=0,hitE=0,detF=0,supportDirty=true,stepCounter=0;
 let sparkN=0,gasN=0,camShake=0;
 
-/* ================= ЭФФЕКТЫ: ИСКРЫ, КРОВЬ, ТРАССЕРЫ, УДАРНЫЕ ВОЛНЫ ================= */
+/* ================= ЭФФЕКТЫ: ИСКРЫ, КРОВЬ, ТРАССЕРЫ, ВСПЫШКИ ================= */
 const MAXS=8000;
 const sxA=new Float32Array(MAXS),syA=new Float32Array(MAXS),svx=new Float32Array(MAXS),svy=new Float32Array(MAXS),
       sl=new Float32Array(MAXS),sm=new Float32Array(MAXS),srad=new Float32Array(MAXS);
@@ -411,6 +411,15 @@ function spark(x,y,ax,ay,life,rad,kind){
   sxA[i]=x;syA[i]=y;svx[i]=ax;svy[i]=ay;sl[i]=life;sm[i]=life;
   srad[i]=rad||(1.1+Math.random()*1.0);
   skind[i]=kind||0;
+}
+const SGRID=8,SSW=Math.ceil(WW/SGRID),SSH=Math.ceil(WH/SGRID);
+const shHead=new Int32Array(SSW*SSH),shNext=new Int32Array(MAXS);
+const NOX=[0,1,-1,0,1],NOY=[0,0,1,1,1];
+function cellSolid(x,y){
+  const cx=(x/SP)|0,cy=(y/SP)|0;
+  if(cx<0||cy<0||cx>=LX||cy>=LY)return -1;
+  const o=occ[cy*LX+cx];
+  return (o>=0&&(flg[o]&ALIVE))?o:-1;
 }
 
 const MAXG=4200;
@@ -425,19 +434,40 @@ function gas(x,y,ax,ay,life,size,kind){
   gkind[i]=kind===undefined?0:kind;gseed[i]=Math.random()*6.283;
 }
 
-const shockwaves=[], flashes=[];
-function addShockwave(x,y,power){
-  for(let i=0;i<shockwaves.length;i++){
-    const sw=shockwaves[i];
-    if(sw.r<22&&Math.hypot(sw.x-x,sw.y-y)<28){
-      sw.maxR=Math.min(210,sw.maxR+14*power);
-      sw.power=Math.min(3.2,sw.power+0.25*power);
-      return;
-    }
+const flashes=[];
+function blastSmoke(x,y,power){
+  const pw=Math.min(1.8,power);
+  const n=7+((8*Math.min(2,power))|0);
+  for(let k=0;k<n;k++){
+    const a=Math.random()*6.283,s=(2.2+Math.random()*5.4)*pw;
+    gas(x+(Math.random()-.5)*6,y+(Math.random()-.5)*6,Math.cos(a)*s,Math.sin(a)*s-0.7,32+Math.random()*46,3.2+Math.random()*3.4,1);
   }
-  if(shockwaves.length<28)shockwaves.push({x,y,r:5,maxR:Math.min(195,62+42*power),spd:7.2+1.5*Math.min(2,power),power:Math.min(2.8,power)});
+  const nd=4+((5*Math.min(2,power))|0);
+  for(let k=0;k<nd;k++){
+    const a=Math.random()*6.283,s=(1.6+Math.random()*4.2)*pw;
+    gas(x+(Math.random()-.5)*8,y+(Math.random()-.5)*8,Math.cos(a)*s,Math.sin(a)*s-0.4,26+Math.random()*34,3+Math.random()*3,2);
+  }
+}
+function addBlastFx(x,y,power){
   if(flashes.length<36)flashes.push({x,y,rad:32+28*power,life:1.0,decay:0.13});
   camShake=Math.min(15,camShake+1.5*power);
+  blastSmoke(x,y,power);
+}
+
+const bulX=new Float32Array(512),bulY=new Float32Array(512),bulVX=new Float32Array(512),bulVY=new Float32Array(512);
+let bulN=0;
+function sampleBullets(){
+  bulN=0;
+  for(let pi=0;pi<projs.length&&bulN<512;pi++){
+    const ids=projs[pi].ids;let ax=0,ay=0,avx=0,avy=0,m=0;
+    for(let k=0;k<ids.length;k++){
+      const i=ids[k];if(!(flg[i]&ALIVE))continue;
+      ax+=px[i];ay+=py[i];avx+=vx[i];avy+=vy[i];m++;
+    }
+    if(!m)continue;
+    const inv=1/m;
+    bulX[bulN]=ax*inv;bulY[bulN]=ay*inv;bulVX[bulN]=avx*inv;bulVY[bulN]=avy*inv;bulN++;
+  }
 }
 
 function puff(x,y,vx0,vy0,power){
@@ -1184,11 +1214,11 @@ function spawnJet(nx,ny,dx,dy){
   for(const i of ids)wake(i);
   for(let k=0;k<28;k++)spark(nx+dx*6,ny+dy*6,dx*(2+Math.random()*7)+(Math.random()-.5)*5,dy*(2+Math.random()*7)+(Math.random()-.5)*5,26+Math.random()*34,1.2,0);
   puff(nx,ny,dx*2,dy*2,1.3);
-  addShockwave(nx,ny,1.1);
+  addBlastFx(nx,ny,1.1);
   sndBoom(.55);
 }
 
-/* ================= ВЗРЫВЫ И УДАРНАЯ ВОЛНА ================= */
+/* ================= ВЗРЫВЫ ================= */
 const EXP_IMP=2.55, EXP_R=16.5, BLAST_R=34, CHAIN_R=9.5;
 function igniteE(i,d){
   if(fuse[i]!==0||!isEX(pm[i])||!(flg[i]&ALIVE))return;
@@ -1199,7 +1229,7 @@ function detonate(i){
   const isFuel=(mat===M.FUEL);
   const pwr=mat===M.C4?1.35:(mat===M.CMPB?1.2:(isFuel?0.85:1.0));
   detCount++;detF++;
-  addShockwave(x,y,pwr*0.65);
+  addBlastFx(x,y,pwr*0.65);
 
   const R=BLAST_R*pwr;
   const cx0=Math.max(0,((x-R)/CELL)|0),cx1=Math.min(GX-1,((x+R)/CELL)|0);
@@ -1618,7 +1648,9 @@ function postFrame(n){
   for(let i=0;i<MAXS&&sparkN>0;i++){
     if(sl[i]<=0)continue;
     svy[i]+=GRAV_SPARK*dtf;
-    sxA[i]+=svx[i]*dtf;syA[i]+=svy[i]*dtf;svx[i]*=.988;svy[i]*=.988;sl[i]-=dtf;
+    const drag=skind[i]===1?0.992:0.988;
+    svx[i]*=drag;svy[i]*=drag;
+    sxA[i]+=svx[i]*dtf;syA[i]+=svy[i]*dtf;sl[i]-=dtf;
     if(skind[i]===2&&Math.random()<0.45&&gasN<MAXG*.92){
       gas(sxA[i],syA[i],svx[i]*0.08,svy[i]*0.08-0.3,22+Math.random()*18,1.5+Math.random()*1.2,1);
     }
@@ -1629,18 +1661,76 @@ function postFrame(n){
       if(Math.abs(svy[i])<.4)svy[i]=0;
     }
     if(sxA[i]<1){sxA[i]=1;svx[i]*=-.5;}else if(sxA[i]>WW-1){sxA[i]=WW-1;svx[i]*=-.5;}
-    const scx=(sxA[i]/SP)|0,scy=(syA[i]/SP)|0;
-    if(scx>=0&&scy>=0&&scx<LX&&scy<LY){
-      const so=occ[scy*LX+scx];
-      if(so>=0&&(flg[so]&ALIVE)){
-        sxA[i]-=svx[i]*dtf*2;syA[i]-=svy[i]*dtf*2;
-        svx[i]*=-.35;svy[i]*=-.35;sl[i]-=3;
+    // Коллизия с твёрдыми телами: выталкивание по нормали, отскок с потерей энергии, трение
+    const so=cellSolid(sxA[i],syA[i]);
+    if(so>=0){
+      const dx=sxA[i]-px[so],dy=syA[i]-py[so];
+      const d=Math.hypot(dx,dy)||.001,inv=1/d;
+      const nx2=dx*inv,ny2=dy*inv;
+      let pen=RC+srad[i]-d;if(pen>SP*2.4)pen=SP*2.4;
+      if(pen>0){sxA[i]+=nx2*pen;syA[i]+=ny2*pen;}
+      const vn=svx[i]*nx2+svy[i]*ny2;
+      if(vn<0){
+        const rest=skind[i]===1?0.14:0.44;
+        svx[i]-=(1+rest)*vn*nx2;svy[i]-=(1+rest)*vn*ny2;
+        const tx2=-ny2,ty2=nx2,vt=svx[i]*tx2+svy[i]*ty2;
+        svx[i]-=tx2*vt*0.30;svy[i]-=ty2*vt*0.30;
+        sl[i]-=2.0+vn*vn*0.03;
         if(skind[i]!==1&&T[so]<1.1&&!isBio(pm[so]))T[so]+=0.025;
       }
     }
     if(sl[i]<=0)sparkN--;
   }
 
+  // Взаимные столкновения искр: обмен импульсом с учётом массы (инерция)
+  if(sparkN>1){
+    shHead.fill(-1);
+    for(let i=0;i<MAXS;i++){
+      if(sl[i]<=0)continue;
+      const cx=(sxA[i]/SGRID)|0,cy=(syA[i]/SGRID)|0;
+      if(cx<0||cy<0||cx>=SSW||cy>=SSH)continue;
+      shNext[i]=shHead[cy*SSW+cx];shHead[cy*SSW+cx]=i;
+    }
+    let scc=0;
+    sccol:
+    for(let cy=0;cy<SSH;cy++){
+      for(let cx=0;cx<SSW;cx++){
+        let i=shHead[cy*SSW+cx];
+        while(i>=0){
+          for(let n=0;n<5;n++){
+            const ncx=cx+NOX[n],ncy=cy+NOY[n];
+            if(ncx<0||ncy<0||ncx>=SSW||ncy>=SSH)continue;
+            let j=shHead[ncy*SSW+ncx];
+            while(j>=0){
+              if(j!==i&&(n!==0||i<j)){
+                const dx=sxA[j]-sxA[i],dy=syA[j]-syA[i],d2=dx*dx+dy*dy,rr=srad[i]+srad[j];
+                scc++;
+                if(d2<rr*rr&&d2>1e-8){
+                  const d=Math.sqrt(d2),nx2=dx/d,ny2=dy/d;
+                  const vn=(svx[j]-svx[i])*nx2+(svy[j]-svy[i])*ny2;
+                  if(vn<0){
+                    const mi=srad[i]*srad[i],mj=srad[j]*srad[j];
+                    const imp=-1.38*vn/(1/mi+1/mj);
+                    svx[i]-=imp*nx2/mi;svy[i]-=imp*ny2/mi;
+                    svx[j]+=imp*nx2/mj;svy[j]+=imp*ny2/mj;
+                    const ov=(rr-d)*0.5;
+                    sxA[i]-=nx2*ov;syA[i]-=ny2*ov;sxA[j]+=nx2*ov;syA[j]+=ny2*ov;
+                    sl[i]-=0.4;sl[j]-=0.4;
+                  }
+                }
+                if(scc>16000)break sccol;
+              }
+              j=shNext[j];
+            }
+          }
+          i=shNext[i];
+        }
+      }
+    }
+  }
+
+  // Точки пуль для рассеивания дыма
+  sampleBullets();
   for(let i=0;i<MAXG&&gasN>0;i++){
     if(gl[i]<=0)continue;
     const kind=gkind[i],f=gl[i]/gm[i];
@@ -1653,17 +1743,49 @@ function postFrame(n){
       if(gvy[i]<-1.6)gvy[i]=-1.6;if(gvy[i]>1)gvy[i]=1;
       gs[i]=gs0[i]*(1+(1-f)*1.9);
     }
+    // Пули рассеивают дым и пыль; огонь приминается воздушным потоком
+    if(bulN>0){
+      for(let b=0;b<bulN;b++){
+        const bdx=gx[i]-bulX[b],bdy=gy[i]-bulY[b],bd2=bdx*bdx+bdy*bdy;
+        if(bd2<324&&bd2>1e-6){
+          const bd=Math.sqrt(bd2),ux=bdx/bd,uy=bdy/bd,k=1-bd/18;
+          if(kind===0){
+            gvx[i]+=ux*k*0.5+bulVX[b]*0.06*k;
+            gvy[i]+=uy*k*0.5+bulVY[b]*0.06*k;
+          }else{
+            gvx[i]+=ux*k*1.6+bulVX[b]*0.22*k;
+            gvy[i]+=uy*k*1.6+bulVY[b]*0.22*k;
+            gl[i]-=1.4*k;
+            gs[i]-=gs0[i]*0.004;
+          }
+        }
+      }
+    }
     gx[i]+=gvx[i]*dtf;gy[i]+=gvy[i]*dtf;gl[i]-=dtf;
     if(gy[i]<2){gy[i]=2;gvy[i]*=-.2;}
+    if(gx[i]<2){gx[i]=2;if(gvx[i]<0)gvx[i]*=-.45;}
+    else if(gx[i]>WW-2){gx[i]=WW-2;if(gvx[i]>0)gvx[i]*=-.45;}
+    // Коллизия с твёрдыми телами: выталкивание, отскок, скольжение вдоль стен
+    const so=cellSolid(gx[i],gy[i]);
+    if(so>=0){
+      const dx=gx[i]-px[so],dy=gy[i]-py[so];
+      const d=Math.hypot(dx,dy)||.001,inv=1/d;
+      const nx2=dx*inv,ny2=dy*inv;
+      const pen=RC+gs[i]*(kind===0?0.7:0.9)-d;
+      if(pen>0){const p=pen>SP*0.9?SP*0.9:pen;gx[i]+=nx2*p;gy[i]+=ny2*p;}
+      const vn=gvx[i]*nx2+gvy[i]*ny2;
+      if(vn<0){
+        const rest=kind===0?0.32:0.16;
+        gvx[i]-=(1+rest)*vn*nx2;gvy[i]-=(1+rest)*vn*ny2;
+        gl[i]-=(kind===0?1.6:0.8);
+        if(kind===1&&Math.random()<0.3)gl[i]-=1.2;
+      }
+      if(kind!==0&&gvy[i]<0.6)gvy[i]+=0.06*dtf;
+    }
     if(gl[i]<=0)gasN--;
   }
 
-  // Обновление ударных волн и вспышек
-  for(let i=shockwaves.length-1;i>=0;i--){
-    const sw=shockwaves[i];
-    sw.r+=sw.spd*dtf;
-    if(sw.r>=sw.maxR)shockwaves.splice(i,1);
-  }
+  // Обновление вспышек
   for(let i=flashes.length-1;i>=0;i--){
     const fl=flashes[i];
     fl.life-=fl.decay*dtf;
@@ -1854,7 +1976,7 @@ function drawSparksAndExplosions(){
     ctx.fill();
   }
 
-  // Яркие вспышки детонации и кольца ударных волн
+  // Яркие вспышки детонации
   ctx.globalCompositeOperation='lighter';
   for(let i=0;i<flashes.length;i++){
     const fl=flashes[i],r=fl.rad*(1.25-0.25*fl.life);
@@ -1864,18 +1986,6 @@ function drawSparksAndExplosions(){
     gr.addColorStop(1,'rgba(255,80,10,0)');
     ctx.fillStyle=gr;
     ctx.beginPath();ctx.arc(fl.x,fl.y,r,0,6.2832);ctx.fill();
-  }
-
-  for(let i=0;i<shockwaves.length;i++){
-    const sw=shockwaves[i],u=1-sw.r/sw.maxR,alpha=u*u*0.78;
-    ctx.lineWidth=Math.max(1.2,4.5*u*sw.power);
-    ctx.strokeStyle='rgba(255,230,175,'+alpha.toFixed(3)+')';
-    ctx.beginPath();ctx.arc(sw.x,sw.y,sw.r,0,6.2832);ctx.stroke();
-    if(sw.r>10){
-      ctx.lineWidth=Math.max(0.8,2.2*u);
-      ctx.strokeStyle='rgba(175,215,255,'+(alpha*0.42).toFixed(3)+')';
-      ctx.beginPath();ctx.arc(sw.x,sw.y,sw.r*0.88,0,6.2832);ctx.stroke();
-    }
   }
 
   // Горячие искры и трассеры (skind === 0 и 2)
@@ -2266,7 +2376,7 @@ function resetAll(){
   nP=0;nB=0;freePTop=0;freeBTop=0;actCount=0;actBCount=0;pendCount=0;projs=[];
   occ.fill(-1);flg.fill(0,0,MAXP);awake.fill(0);home.fill(-1);isPinned.fill(0);suppVis.fill(0);wasSupp.fill(0);
   pb.fill(-1);bAlive.fill(0);bAct.fill(0);
-  sparkN=0;gasN=0;sl.fill(0);gl.fill(0);shockwaves.length=0;flashes.length=0;camShake=0;
+  sparkN=0;gasN=0;sl.fill(0);gl.fill(0);flashes.length=0;camShake=0;
   detCount=0;peakT=0;maxT=0;maxSp=0;shotFrames=-1;pScale=1;supportDirty=true;
 }
 function loadScene(name){
