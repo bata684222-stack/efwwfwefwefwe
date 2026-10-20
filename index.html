@@ -218,6 +218,16 @@ input[type=text]{border-radius:10px;padding:8px 10px}
 
 
 
+
+/* Rebuilt editor UX: clearer sections, live measurements and translucent previews */
+.editor-hint{padding:9px 11px;border:1px solid #344256;border-radius:10px;background:#101824;color:#c8d6e8;font-size:12px;line-height:1.45}
+.editor-stats{padding:8px 11px;border:1px solid #5b4930;border-radius:10px;background:#20190f;color:#ffd28d;font:600 12px ui-monospace,monospace;letter-spacing:.1px}
+.editor-section-title{font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:#aebbd0;padding:5px 2px 0}
+#edtools,#bldtools{background:#0c1119;border-color:#344052}
+#edpal button,#bldpal button{min-height:36px;border-radius:9px}
+#edpal button.selected-mat,#bldpal button.selected-mat{outline:2px solid #ffd28d;background:#332718;border-color:#ffd28d}
+.ed-canvas-wrap{background-color:#090d14;background-image:linear-gradient(45deg,#111722 25%,transparent 25%),linear-gradient(-45deg,#111722 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#111722 75%),linear-gradient(-45deg,transparent 75%,#111722 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}
+@media(max-width:760px){.editor-hint,.editor-stats{font-size:11px;padding:8px}.editor-section-title{padding-top:3px}}
 </style>
 </head>
 <body>
@@ -328,7 +338,7 @@ input[type=text]{border-radius:10px;padding:8px 10px}
     <span>Ширина: <b id="edhv">5</b></span><input type="range" id="edh" min="3" max="18" value="5" style="width:80px">
     <span>Кисть: <b id="edszv">1</b></span><input type="range" id="edsz" min="1" max="5" value="1" style="width:60px">
   </div>
-  <div class="ed-canvas-wrap"><canvas id="edc"></canvas></div><div id="edpal" class="pal-wrap"></div>
+  <div class="editor-hint">Рисование: выбери материал → инструмент → веди по сетке. Полупрозрачная подсветка показывает область действия до отпускания.</div><div class="editor-stats" id="edstats">Размер: 12 × 5 клеток · Занято: 0 клеток</div><div class="ed-canvas-wrap"><canvas id="edc"></canvas></div><div class="editor-section-title">1. Материал</div><div id="edpal" class="pal-wrap"></div>
   <div class="bldr-bar"><label style="min-width:110px">Имя снаряда</label><input type="text" id="edname" value="Мой снаряд" maxlength="36" style="flex:1;min-width:140px"><button id="edexport">Экспорт JSON</button><button id="edimport">Импорт JSON</button><input type="file" id="edfileinp" accept=".json" style="display:none"></div>
   <div class="row"><button id="edfire">Сохранить и выбрать снаряд</button></div>
 </div>
@@ -348,7 +358,7 @@ input[type=text]{border-radius:10px;padding:8px 10px}
     <span>Кисть: <b id="bldszv">2</b></span><input type="range" id="bldsz" min="1" max="15" value="2" style="width:75px"><div class="sep"></div>
     <button data-tpl="house">Дом</button><button data-tpl="five">5-этажка</button><button data-tpl="tank">Танк</button><button data-tpl="plane">Самолёт</button>
   </div>
-  <div class="ed-canvas-wrap"><canvas id="bldc"></canvas></div><div id="bldpal" class="pal-wrap"></div>
+  <div class="editor-hint">Выбери инструмент и материал, затем рисуй. Прозрачная подсветка показывает форму и размер до завершения действия.</div><div class="editor-stats" id="bldstats">Полотно: 110 × 72 клеток · Занято: 0 клеток</div><div class="ed-canvas-wrap"><canvas id="bldc"></canvas></div><div class="editor-section-title">1. Материал блоков</div><div id="bldpal" class="pal-wrap"></div>
   <div class="bldr-bar">
     <input type="text" id="bldname" placeholder="Название постройки" style="width:140px">
     <button id="bldexport">Копировать код</button><button id="bldimport">Вставить код</button>
@@ -900,7 +910,21 @@ function detonate(i){
       }
     }
   }
-  puff(x,y,0,0,1.35*pwr);kill(i);
+  // Прямое разрушение блоков взрывной волной: слабые материалы разлетаются,
+  // тяжёлые повреждаются ближе к эпицентру. Визуальных колец нет.
+  const br=R*.78, bx0=Math.max(0,((x-br)/SP)|0), bx1=Math.min(LX-1,((x+br)/SP)|0), by0=Math.max(0,((y-br)/SP)|0), by1=Math.min(LY-1,((y+br)/SP)|0);
+  for(let cy=by0;cy<=by1;cy++)for(let cx=bx0;cx<=bx1;cx++){
+    const o=occ[cy*LX+cx];if(o<0||o===i||!(flg[o]&ALIVE))continue;
+    const dx=px[o]-x,dy=py[o]-y,d=Math.hypot(dx,dy);if(d>br)continue;
+    const fall=Math.max(0,1-d/br),mm=pm[o],fragile=mm===M.GLASS||mm===M.BRICK||mm===M.CONC||mm===M.OAK||mm===M.ALUM||mm===M.FUEL||mm===M.EXP||mm===M.CMPB||mm===M.C4;
+    const chance=fall*fall*pwr*(fragile?.95:.38);
+    if(Math.random()<Math.min(.96,chance)){const kick=1.5+fall*pwr*4;vx[o]+=(dx/(d||1))*kick+(Math.random()-.5)*kick*.45;vy[o]+=(dy/(d||1))*kick-kick*.28;wake(o);if(fall*pwr>(fragile?.32:.72)){if(Math.random()<(fragile?.78:.38))kill(o);}}
+    if(d<br*.68&&fall>.35){for(let z=0;z<SL;z++){const bk=pb[o*SL+z];if(bk>=0&&Math.random()<fall*pwr*.28)breakBond(bk,true);}}
+  }
+  puff(x,y,0,0,1.55*pwr);
+  // Дополнительный восходящий дым и пыль от разрушенных материалов.
+  for(let k=0;k<Math.round(10+8*pwr);k++){const a=Math.random()*6.283,s=(.5+Math.random()*2.8)*pwr;gas(x+(Math.random()-.5)*br*.55,y+(Math.random()-.5)*br*.4,Math.cos(a)*s,Math.sin(a)*s-1.2,65+Math.random()*85,4+Math.random()*5,1);}
+  kill(i);
 }
 function processDet(){
   const n=pendCount;if(!n)return;const cur=pendA;pendA=pendB;pendB=cur;pendCount=0;let detF_=0;
@@ -1522,12 +1546,14 @@ function edDraw(){
   ex.fillStyle='#080a0e';ex.fillRect(0,0,edc.width,edc.height);
   for(let y=0;y<EH;y++)for(let x=0;x<EW;x++){const m=edGrid[y*EW+x];if(m){const c=MAT[m].c;ex.fillStyle=`rgb(${c[0]},${c[1]},${c[2]})`;ex.fillRect(x*ECS+1,y*ECS+1,ECS-2,ECS-2);}}
   ex.strokeStyle='#39465c';ex.lineWidth=1;ex.beginPath();for(let x=0;x<=EW;x++){ex.moveTo(x*ECS+.5,0);ex.lineTo(x*ECS+.5,edc.height);}for(let y=0;y<=EH;y++){ex.moveTo(0,y*ECS+.5);ex.lineTo(edc.width,y*ECS+.5);}ex.stroke();
+  if(edCur){const previewTool=['line','rect','box','fill'].includes(edTool)?edTool:((edTool==='brush'||edTool==='erase')?'brush':null);if(previewTool){const ax=edDown&&edStart?edStart.x:edCur.x,ay=edDown&&edStart?edStart.y:edCur.y;const cells=getShapeCells(previewTool,ax,ay,edCur.x,edCur.y,edSz,true);ex.fillStyle=edTool==='erase'?'rgba(255,90,100,.48)':`rgba(${MAT[edMat].c.join(',')},.48)`;for(let i=0;i<cells.length;i+=2){const x=cells[i],y=cells[i+1];if(x>=0&&y>=0&&x<EW&&y<EH)ex.fillRect(x*ECS+1,y*ECS+1,ECS-2,ECS-2);}}}
+  const used=edGrid.reduce((n,v)=>n+(v?1:0),0);const st=$('edstats');if(st)st.textContent=`Размер: ${EW} × ${EH} клеток · Занято: ${used} клеток${edDown&&edStart&&edCur?` · Область: ${Math.abs(edCur.x-edStart.x)+1} × ${Math.abs(edCur.y-edStart.y)+1}`:''}`;
 }
 resizeEd(12,5);
 edc.addEventListener('pointerdown',e=>{if(edc.setPointerCapture)try{edc.setPointerCapture(e.pointerId)}catch(_){}const r=edc.getBoundingClientRect(),x=(((e.clientX-r.left)/r.width)*EW)|0,y=(((e.clientY-r.top)/r.height)*EH)|0;edDown=true;edStart=edCur={x,y};edHist.push(new Uint8Array(edGrid));if(edTool==='brush'||edTool==='erase'){const v=edTool==='erase'?0:edMat;edGrid[y*EW+x]=v;if(edSym)edGrid[(EH-1-y)*EW+x]=v;}edDraw();});
-edc.addEventListener('pointermove',e=>{if(!edDown)return;const r=edc.getBoundingClientRect(),x=Math.max(0,Math.min(EW-1,(((e.clientX-r.left)/r.width)*EW)|0)),y=Math.max(0,Math.min(EH-1,(((e.clientY-r.top)/r.height)*EH)|0));edCur={x,y};if(edTool==='brush'||edTool==='erase'){const v=edTool==='erase'?0:edMat;edGrid[y*EW+x]=v;if(edSym)edGrid[(EH-1-y)*EW+x]=v;}edDraw();});
-addEventListener('pointerup',()=>{if(edDown){if((edTool==='line'||edTool==='rect'||edTool==='box')&&edStart){const cells=getShapeCells(edTool,edStart.x,edStart.y,edCur.x,edCur.y,edSz,true);for(let i=0;i<cells.length;i+=2){const x=cells[i],y=cells[i+1];if(x>=0&&y>=0&&x<EW&&y<EH){edGrid[y*EW+x]=edMat;if(edSym)edGrid[(EH-1-y)*EW+x]=edMat;}}}edDown=false;edDraw();}});
-for(const m of PAINT_MATS){const b=document.createElement('button');b.innerHTML=`<i style="background:rgb(${MAT[m].c.join(',')})"></i>${MAT[m].n}`;b.onclick=()=>{edMat=m;if(edTool==='erase')edTool='brush';};$('edpal').appendChild(b);}
+edc.addEventListener('pointermove',e=>{const r=edc.getBoundingClientRect(),x=Math.max(0,Math.min(EW-1,(((e.clientX-r.left)/r.width)*EW)|0)),y=Math.max(0,Math.min(EH-1,(((e.clientY-r.top)/r.height)*EH)|0));edCur={x,y};if(edDown&&(edTool==='brush'||edTool==='erase')){const cells=getShapeCells('brush',x,y,x,y,edSz,true),v=edTool==='erase'?0:edMat;for(let i=0;i<cells.length;i+=2){const xx=cells[i],yy=cells[i+1];if(xx>=0&&yy>=0&&xx<EW&&yy<EH){edGrid[yy*EW+xx]=v;if(edSym)edGrid[(EH-1-yy)*EW+xx]=v;}}}edDraw();});
+addEventListener('pointerup',()=>{if(edDown){if((edTool==='line'||edTool==='rect'||edTool==='box'||edTool==='fill')&&edStart){const cells=getShapeCells(edTool,edStart.x,edStart.y,edCur.x,edCur.y,edSz,true);for(let i=0;i<cells.length;i+=2){const x=cells[i],y=cells[i+1];if(x>=0&&y>=0&&x<EW&&y<EH){edGrid[y*EW+x]=edMat;if(edSym)edGrid[(EH-1-y)*EW+x]=edMat;}}}edDown=false;edDraw();}});
+for(const m of PAINT_MATS){const b=document.createElement('button');b.innerHTML=`<i style="background:rgb(${MAT[m].c.join(',')})"></i>${MAT[m].n}`;b.onclick=()=>{edMat=m;if(edTool==='erase')edTool='brush';$('edpal').querySelectorAll('button').forEach(x=>x.classList.toggle('selected-mat',x===b));};$('edpal').appendChild(b);}
 document.querySelectorAll('#edtools button[data-et]').forEach(b=>b.onclick=()=>{edTool=b.dataset.et;document.querySelectorAll('#edtools button[data-et]').forEach(x=>x.classList.toggle('on',x===b));});
 $('edw').oninput=e=>resizeEd(+e.target.value,EH);$('edh').oninput=e=>resizeEd(EW,+e.target.value);$('edsz').oninput=e=>{edSz=+e.target.value;$('edszv').textContent=edSz;};
 $('edundo').onclick=()=>{if(edHist.length){edGrid.set(edHist.pop());edDraw();}};$('edmirror').onclick=()=>{for(let y=0;y<EH;y++)for(let x=0;x<(EW>>1);x++){const a=y*EW+x,b=y*EW+EW-1-x,t=edGrid[a];edGrid[a]=edGrid[b];edGrid[b]=t;}edDraw();};
@@ -1552,11 +1578,13 @@ function bldDraw(){
   for(let x=0;x<=BW;x++){const xx=x*BCS+.5;bx.moveTo(xx,0);bx.lineTo(xx,bldc.height);}
   for(let y=0;y<=BH;y++){const yy=y*BCS+.5;bx.moveTo(0,yy);bx.lineTo(bldc.width,yy);}
   bx.stroke();
+  if(bldCur){const previewTool=['line','plate','rect','box','circle'].includes(bldTool)?bldTool:((bldTool==='brush'||bldTool==='erase')?'brush':null);if(previewTool){const ax=bldDown&&bldStart?bldStart.x:bldCur.x,ay=bldDown&&bldStart?bldStart.y:bldCur.y;const cells=getShapeCells(previewTool,ax,ay,bldCur.x,bldCur.y,bldSz,bldSq);const bc=MAT[bldMat].c;bx.fillStyle=bldTool==='erase'?'rgba(255,100,120,.48)':`rgba(${bc[0]},${bc[1]},${bc[2]},.48)`;for(let i=0;i<cells.length;i+=2){const x=cells[i],y=cells[i+1];if(x>=0&&y>=0&&x<BW&&y<BH)bx.fillRect(x*BCS+0.5,y*BCS+0.5,Math.max(1,BCS-1),Math.max(1,BCS-1));}}}
+  const used=bldGrid.reduce((n,v)=>n+(v?1:0),0);const st=$('bldstats');if(st)st.textContent=`Полотно: ${BW} × ${BH} клеток · Занято: ${used} клеток${bldDown&&bldStart&&bldCur?` · Область: ${Math.abs(bldCur.x-bldStart.x)+1} × ${Math.abs(bldCur.y-bldStart.y)+1}`:''}`;
 }
-for(const m of PAINT_MATS){const b=document.createElement('button');b.innerHTML=`<i style="background:rgb(${MAT[m].c.join(',')})"></i>${MAT[m].n}`;b.onclick=()=>{bldMat=m;if(bldTool==='erase')bldTool='brush';};$('bldpal').appendChild(b);}
+for(const m of PAINT_MATS){const b=document.createElement('button');b.innerHTML=`<i style="background:rgb(${MAT[m].c.join(',')})"></i>${MAT[m].n}`;b.onclick=()=>{bldMat=m;if(bldTool==='erase')bldTool='brush';$('bldpal').querySelectorAll('button').forEach(x=>x.classList.toggle('selected-mat',x===b));};$('bldpal').appendChild(b);}
 document.querySelectorAll('#bldtools button[data-bt]').forEach(b=>b.onclick=()=>{bldTool=b.dataset.bt;document.querySelectorAll('#bldtools button[data-bt]').forEach(x=>x.classList.toggle('on',x===b));});
 bldc.addEventListener('pointerdown',e=>{if(bldc.setPointerCapture)try{bldc.setPointerCapture(e.pointerId)}catch(_){}const r=bldc.getBoundingClientRect(),x=(((e.clientX-r.left)/r.width)*BW)|0,y=(((e.clientY-r.top)/r.height)*BH)|0;bldDown=true;bldStart=bldCur={x,y};bldHist.push(new Uint8Array(bldGrid));if(bldTool==='mannequin'){drawMannequin((px_,py_,m)=>{if(px_>=0&&py_>=0&&px_<BW&&py_<BH&&m)bldGrid[py_*BW+px_]=m;},x,Math.max(28,y));bldDown=false;}else if(bldTool==='brush'||bldTool==='erase'){const cells=getShapeCells(bldTool,x,y,x,y,bldSz,bldSq),v=bldTool==='erase'?0:bldMat;for(let i=0;i<cells.length;i+=2)if(cells[i]>=0&&cells[i+1]>=0&&cells[i]<BW&&cells[i+1]<BH)bldGrid[cells[i+1]*BW+cells[i]]=v;}bldDraw();});
-bldc.addEventListener('pointermove',e=>{if(!bldDown)return;const r=bldc.getBoundingClientRect(),x=Math.max(0,Math.min(BW-1,(((e.clientX-r.left)/r.width)*BW)|0)),y=Math.max(0,Math.min(BH-1,(((e.clientY-r.top)/r.height)*BH)|0));bldCur={x,y};if(bldTool==='brush'||bldTool==='erase'){const cells=getShapeCells(bldTool,bldStart.x,bldStart.y,x,y,bldSz,bldSq),v=bldTool==='erase'?0:bldMat;for(let i=0;i<cells.length;i+=2)if(cells[i]>=0&&cells[i+1]>=0&&cells[i]<BW&&cells[i+1]<BH)bldGrid[cells[i+1]*BW+cells[i]]=v;bldStart=bldCur;}bldDraw();});
+bldc.addEventListener('pointermove',e=>{const r=bldc.getBoundingClientRect(),x=Math.max(0,Math.min(BW-1,(((e.clientX-r.left)/r.width)*BW)|0)),y=Math.max(0,Math.min(BH-1,(((e.clientY-r.top)/r.height)*BH)|0));bldCur={x,y};if(bldDown&&(bldTool==='brush'||bldTool==='erase')){const cells=getShapeCells('brush',x,y,x,y,bldSz,bldSq),v=bldTool==='erase'?0:bldMat;for(let i=0;i<cells.length;i+=2)if(cells[i]>=0&&cells[i+1]>=0&&cells[i]<BW&&cells[i+1]<BH)bldGrid[cells[i+1]*BW+cells[i]]=v;}bldDraw();});
 bldc.addEventListener('pointerup',()=>{if(bldDown){if(bldStart&&(bldTool==='line'||bldTool==='plate'||bldTool==='rect'||bldTool==='box'||bldTool==='circle')){const cells=getShapeCells(bldTool,bldStart.x,bldStart.y,bldCur.x,bldCur.y,bldSz,bldSq);for(let i=0;i<cells.length;i+=2)if(cells[i]>=0&&cells[i+1]>=0&&cells[i]<BW&&cells[i+1]<BH)bldGrid[cells[i+1]*BW+cells[i]]=bldMat;}bldDown=false;bldDraw();}});
 $('bldw').oninput=e=>resizeBld(+e.target.value,BH);$('bldh').oninput=e=>resizeBld(BW,+e.target.value);$('bldsz').oninput=e=>{bldSz=+e.target.value;$('bldszv').textContent=bldSz;};
 $('bldundo').onclick=()=>{if(bldHist.length){bldRedo.push(new Uint8Array(bldGrid));bldGrid.set(bldHist.pop());bldDraw();}};$('bldredo').onclick=()=>{if(bldRedo.length){bldHist.push(new Uint8Array(bldGrid));bldGrid.set(bldRedo.pop());bldDraw();}};
