@@ -38,7 +38,8 @@ input[type=range]{width:100%;accent-color:var(--acc);margin:0;height:15px}
 .pal-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:3px;margin:5px 0;max-width:760px}
 .bldr-bar{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin:4px 0}.sep{width:1px;height:16px;background:var(--line)}
 .proj-prev-box{display:flex;align-items:center;justify-content:space-between;background:#090c12;border:1px solid var(--line);border-radius:4px;padding:3px 6px}
-input[type=text]{background:#090c12;border:1px solid var(--line);color:var(--txt);padding:4px 6px;font-size:11px;border-radius:3px}
+input[type=text],select{background:#090c12;border:1px solid var(--line);color:var(--txt);padding:4px 6px;font-size:11px;border-radius:3px}
+.bldr-bar select{flex:1;min-width:120px;max-width:260px}
 @media(max-width:640px){#panel{width:225px}}
 
 /* ================= МОБИЛЬНОЕ УПРАВЛЕНИЕ ================= */
@@ -57,7 +58,7 @@ button,input[type=range]{touch-action:manipulation}
   #mobileAim label{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:10px;line-height:1.25;margin:0 0 3px;color:#aeb9cc;white-space:nowrap}
   #mobileAim label b{font-size:11px;color:#ffd08a}
   #mobileAim input[type=range]{height:22px;margin:0;width:100%;touch-action:pan-x;accent-color:#e9a64a}
-  #mobileDock{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;pointer-events:auto}
+  #mobileDock{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;pointer-events:auto}
   #mobileDock button{min-width:0;min-height:56px;height:56px;padding:4px 1px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
     border-radius:9px;border:1px solid #30394a;background:rgba(18,24,35,.97);font-size:10px;line-height:1.05;white-space:normal;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.25)}
   #mobileDock button .mi{display:block;font-size:17px;line-height:1}
@@ -186,7 +187,7 @@ body.desktop-ui .modal button{border-radius:10px}
   .modal .ed-canvas-wrap canvas{max-width:none;touch-action:none;}
   .modal .pal-wrap{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;max-width:none;margin:0;}
   .modal .pal-wrap button{min-width:0;min-height:43px;padding:7px;border-radius:10px;font-size:11px;overflow:hidden;}
-  .modal input[type=text]{min-height:42px;min-width:110px;border-radius:10px;font-size:14px;}
+  .modal input[type=text],.modal select{min-height:42px;min-width:110px;border-radius:10px;font-size:14px;}
   .modal .row{display:grid;grid-template-columns:1fr;gap:6px;}
   .modal .row button{min-height:46px;border-radius:12px;font-size:13px;}
   #edc,#bldc{max-width:none;}
@@ -216,16 +217,11 @@ input[type=text]{border-radius:10px;padding:8px 10px}
 @media(max-width:899px),(pointer:coarse){#desktopBar,#deskWindows{display:none!important}}
 
 
-/* Quick fullscreen control at the top on phones */
-#phoneFullscreen{display:none;position:fixed;z-index:120;top:calc(8px + env(safe-area-inset-top));right:8px;min-height:42px;padding:0 13px;border:1px solid rgba(255,255,255,.42);border-radius:14px;background:rgba(8,8,8,.88);color:#fff;font:600 12px system-ui,sans-serif;box-shadow:0 4px 18px #0008;backdrop-filter:blur(10px);touch-action:manipulation}
-#phoneFullscreen:active{transform:scale(.96);background:#fff;color:#000}
-@media(max-width:899px),(pointer:coarse){#phoneFullscreen{display:flex;align-items:center;gap:7px}}
 
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
-<button id="phoneFullscreen" type="button" aria-label="Переключить полноэкранный режим"><span aria-hidden="true">⛶</span><span>На весь экран</span></button>
 <div id="desktopBar" aria-label="Главное меню">
   <div class="desk-brand"><span class="desk-mark">B</span><span>БАЛЛИСТИЧЕСКИЙ ПОЛИГОН</span></div>
   <nav class="desk-nav" aria-label="Разделы">
@@ -308,7 +304,6 @@ input[type=text]{border-radius:10px;padding:8px 10px}
     <button id="mArmor" aria-label="Выбрать манекен с бронёй"><span class="mi">🛡️</span><small>Броня</small></button>
     <button id="mPause" aria-label="Пауза"><span class="mi">Ⅱ</span><small>Пауза</small></button>
     <button id="mBuild" aria-label="Открыть постройку"><span class="mi">▦</span><small>Постройка</small></button>
-    <button id="mFull" aria-label="Полный экран"><span class="mi">⛶</span><small>Экран</small></button>
   </div>
 </div>
 <div id="mobileToast" role="status" aria-live="polite"></div>
@@ -359,7 +354,8 @@ input[type=text]{border-radius:10px;padding:8px 10px}
     <button id="bldexport">Копировать код</button><button id="bldimport">Вставить код</button>
     <button id="bldfiledl">Скачать</button><button id="bldfileul">Загрузить</button><input type="file" id="bldfileinp" accept=".json,.txt" style="display:none">
   </div>
-  <div class="row"><button id="bldstamp">Взять как штамп на карту</button><button id="bldsave" style="border-color:var(--acc);color:#fff">Поставить на сцену и сохранить</button></div>
+  <div class="row"><button id="bldstamp">Взять как штамп на карту</button><button id="bldsave" style="border-color:var(--acc);color:#fff">Сохранить постройку</button><button id="bldplace">Поставить на сцену</button></div>
+  <div class="bldr-bar" id="bldSavedBar"><span>Сохранённые:</span><select id="bldSavedSelect" aria-label="Сохранённые постройки"><option value="">Нет сохранений</option></select><button id="bldLoadSaved">Открыть</button><button id="bldDeleteSaved">Удалить</button></div>
 </div>
 <div id="hud"></div><div id="fps"></div>
 
@@ -505,10 +501,20 @@ function gas(x,y,ax,ay,life,size,kind){
 }
 const flashes=[];
 function addBlastFx(x,y,power,isUran){
-  if(flashes.length<20)flashes.push({x,y,rad:16+16*power,life:1,decay:isUran?.1:.17,uran:!!isUran});
-  camShake=Math.min(10,camShake+.9*power);
-  const pw=Math.min(2.2,power),n=4+((4*pw)|0);
-  for(let k=0;k<n;k++){const a=Math.random()*6.283,s=(1.8+Math.random()*4.4)*pw;gas(x+(Math.random()-.5)*6,y+(Math.random()-.5)*6,Math.cos(a)*s,Math.sin(a)*s-.6,32+Math.random()*40,3+Math.random()*3,1);}
+  const pw=Math.min(2.2,power),rayCount=10+((pw*5)|0);
+  if(flashes.length<20)flashes.push({x,y,rad:17+17*pw,life:1,decay:isUran?.105:.19,uran:!!isUran,seed:Math.random()*6.283,tilt:(Math.random()-.5)*.45,rays:rayCount});
+  camShake=Math.min(10,camShake+1.05*pw);
+  // A brief irregular flame flash, flying embers and rolling smoke; deliberately no ring-shaped shockwaves.
+  const smokeN=8+((7*pw)|0);
+  for(let k=0;k<smokeN;k++){
+    const a=Math.random()*6.283,s=(1.2+Math.random()*5.1)*pw;
+    gas(x+(Math.random()-.5)*7,y+(Math.random()-.5)*7,Math.cos(a)*s,Math.sin(a)*s-.75,34+Math.random()*52,3.2+Math.random()*4.2,1);
+  }
+  const emberN=Math.min(64,Math.round(18+pw*19));
+  for(let k=0;k<emberN;k++){
+    const a=Math.random()*6.283,s=(1.6+Math.random()*6.3)*(.65+pw*.58);
+    spark(x+(Math.random()-.5)*4,y+(Math.random()-.5)*4,Math.cos(a)*s,Math.sin(a)*s-(.2+Math.random()*1.5),13+Math.random()*26,.7+Math.random()*1.25,0);
+  }
 }
 function puff(x,y,vx0,vy0,power){
   for(let k=0;k<2;k++){
@@ -1211,9 +1217,26 @@ function render(){
   }
   ctx.globalCompositeOperation='lighter';
   for(const fl of flashes){
-    const r=fl.rad*(1.2-.2*fl.life),gr=ctx.createRadialGradient(fl.x,fl.y,1,fl.x,fl.y,r);
-    gr.addColorStop(0,fl.uran?`rgba(220,255,220,${fl.life*.65})`:`rgba(255,245,215,${fl.life*.52})`);
-    gr.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=gr;ctx.beginPath();ctx.arc(fl.x,fl.y,r,0,6.283);ctx.fill();
+    const r=fl.rad*(1.14-.14*fl.life);
+    // Soft, slightly flattened light bloom rather than a visible circular ring.
+    ctx.save();ctx.translate(fl.x,fl.y);ctx.rotate(fl.tilt||0);ctx.scale(1.22,.78);
+    const gr=ctx.createRadialGradient(0,0,1,0,0,r);
+    gr.addColorStop(0,fl.uran?`rgba(232,255,226,${fl.life*.72})`:`rgba(255,249,220,${fl.life*.72})`);
+    gr.addColorStop(.24,fl.uran?`rgba(139,255,111,${fl.life*.48})`:`rgba(255,166,48,${fl.life*.56})`);
+    gr.addColorStop(.62,fl.uran?`rgba(83,205,66,${fl.life*.19})`:`rgba(242,65,20,${fl.life*.22})`);
+    gr.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=gr;ctx.beginPath();ctx.ellipse(0,0,r,r,0,0,6.283);ctx.fill();ctx.restore();
+    // Jagged short flame tongues radiate outwards; no concentric circles or rings.
+    if(fl.life>.08){
+      ctx.lineCap='round';
+      for(let k=0;k<fl.rays;k++){
+        const a=fl.seed+k*6.283/fl.rays,inner=r*(.08+(1-fl.life)*.23),outer=r*(.34+((k*17)%7)*.075)*(.68+fl.life*.32);
+        const bend=((k%2)?1:-1)*r*(.035+((k*11)%5)*.012),ex=fl.x+Math.cos(a)*outer,ey=fl.y+Math.sin(a)*outer;
+        ctx.strokeStyle=fl.uran?`rgba(184,255,142,${fl.life*.68})`:`rgba(255,${145+((k*13)%90)},${42+((k*7)%34)},${fl.life*.78})`;
+        ctx.lineWidth=(.65+fl.life*1.8)*(k%4===0?1.3:1);
+        ctx.beginPath();ctx.moveTo(fl.x+Math.cos(a)*inner,fl.y+Math.sin(a)*inner);
+        ctx.quadraticCurveTo(fl.x+Math.cos(a+.12)*outer*.62+bend,fl.y+Math.sin(a+.12)*outer*.62-bend,ex,ey);ctx.stroke();
+      }
+    }
   }
   if(sparkN>0){
     ctx.fillStyle='rgba(255,165,50,.85)';ctx.beginPath();
@@ -1470,14 +1493,6 @@ $('mPause').onclick=()=>{
   $('mPause').querySelector('.mi').textContent=paused?'▶':'Ⅱ';
 };
 $('mBuild').onclick=()=>{openPanelTab('tBuild');if(mobileUI)showMobileToast('Открыта постройка');};
-const fullBtn=$('mFull');
-function updateFullscreenButton(){if(!fullBtn)return;const yes=!!document.fullscreenElement;fullBtn.querySelector('small').textContent=yes?'Выход':'Экран';fullBtn.classList.toggle('on',yes);}
-fullBtn.onclick=async()=>{try{if(!document.fullscreenElement){const el=document.documentElement;if(el.requestFullscreen)await el.requestFullscreen();else if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock('landscape');}else await document.exitFullscreen();}catch(e){showMobileToast('Если полный экран недоступен, открой игру в браузере и выбери «На весь экран»');}updateFullscreenButton();};
-document.addEventListener('fullscreenchange',updateFullscreenButton);
-const phoneFull=$('phoneFullscreen');
-function syncPhoneFullscreen(){if(!phoneFull)return;const active=!!document.fullscreenElement;phoneFull.lastElementChild.textContent=active?'Выйти из полного экрана':'На весь экран';phoneFull.setAttribute('aria-label',active?'Выйти из полноэкранного режима':'Включить полноэкранный режим');phoneFull.querySelector('span').textContent=active?'⤢':'⛶';}
-phoneFull.addEventListener('click',async()=>{try{if(!document.fullscreenElement){const root=document.documentElement;if(root.requestFullscreen)await root.requestFullscreen();else throw new Error('fullscreen unavailable');if(screen.orientation?.lock){try{await screen.orientation.lock('landscape')}catch(_){}}}else if(document.exitFullscreen)await document.exitFullscreen();}catch(_){showMobileToast('Если кнопка не сработала, открой страницу в браузере и выбери «На весь экран» в меню браузера.');}syncPhoneFullscreen();});
-document.addEventListener('fullscreenchange',syncPhoneFullscreen);syncPhoneFullscreen();
 
 document.querySelectorAll('button[data-ts]').forEach(b=>b.onclick=()=>{ts=+b.dataset.ts;$('tsrng').value=ts;$('tsv').textContent=ts.toFixed(2)+'x';});
 $('spd').oninput=e=>{curSpeed=+e.target.value;$('spdv').textContent=curSpeed+' м/с';};
@@ -1548,8 +1563,100 @@ $('bldundo').onclick=()=>{if(bldHist.length){bldRedo.push(new Uint8Array(bldGrid
 $('bldclear').onclick=()=>{bldGrid.fill(0);bldDraw();};$('bldopen').onclick=()=>{$('bldr').classList.add('open');bldDraw();};$('bldclose').onclick=()=>$('bldr').classList.remove('open');
 document.querySelectorAll('#bldr button[data-tpl]').forEach(b=>b.onclick=()=>{bldGrid.fill(0);const t=b.dataset.tpl;if(t==='five'&&BH<136)resizeBld(BW,140);const put=(x,y,m)=>{if(x>=0&&y>=0&&x<BW&&y<BH&&m)bldGrid[y*BW+x]=m;};if(t==='house')drawHouse(put,BW>>1,BH-2);else if(t==='five')drawFiveStory(put,BW>>1,BH-2);else if(t==='tank')drawTank(put,BW>>1,BH-2);else if(t==='plane')drawPlane(put,BW>>1,BH-2);bldDraw();});
 function extractBld(){let x0=BW,x1=-1,y0=BH,y1=-1;for(let y=0;y<BH;y++)for(let x=0;x<BW;x++)if(bldGrid[y*BW+x]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}if(x1<0)return null;const cx=(x0+x1)>>1,arr=[];for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(bldGrid[y*BW+x])arr.push(x-cx,y-y1,bldGrid[y*BW+x]);return arr;}
+
+const BLD_STORAGE_KEY='ballisticField.savedBuildings.v1';
+function bldNotice(message){$('bldinfo').textContent=message;if(mobileUI)showMobileToast(message);}
+function makeBldPayload(){
+  return {version:1,type:'ballistic-building',name:(($('bldname').value||'Своя постройка').trim()||'Своя постройка').slice(0,60),width:BW,height:BH,grid:Array.from(bldGrid)};
+}
+function parseBldPayload(raw){
+  let d=typeof raw==='string'?JSON.parse(raw):raw;
+  if(d&&d.building&&typeof d.building==='object')d=d.building;
+  if(!d||typeof d!=='object')throw new Error('Ожидался JSON постройки');
+  const w=Number(d.width),h=Number(d.height),grid=d.grid;
+  if(!Number.isInteger(w)||!Number.isInteger(h)||w<1||w>160||h<1||h>140||!Array.isArray(grid)||grid.length!==w*h)throw new Error('Неверный формат или размер сетки');
+  const clean=grid.map(v=>{const n=Number(v);if(!Number.isInteger(n)||n<0||n>=MAT.length)throw new Error('В коде найден неизвестный материал');return n;});
+  return {version:1,type:'ballistic-building',name:String(d.name||'Загруженная постройка').trim().slice(0,60)||'Загруженная постройка',width:w,height:h,grid:clean};
+}
+function applyBldPayload(d){
+  const data=parseBldPayload(d);resizeBld(data.width,data.height);bldGrid.set(data.grid);$('bldname').value=data.name;
+  $('bldw').value=data.width;$('bldh').value=data.height;bldHist.length=0;bldRedo.length=0;bldDraw();return data;
+}
+function readSavedBlds(){
+  try{const v=JSON.parse(localStorage.getItem(BLD_STORAGE_KEY)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.id==='string'&&Array.isArray(x.grid)):[];}catch(_){return [];}
+}
+let savedBlds=readSavedBlds();
+function refreshSavedBlds(selectedId){
+  const sel=$('bldSavedSelect');if(!sel)return;savedBlds=readSavedBlds();sel.textContent='';
+  if(!savedBlds.length){const o=document.createElement('option');o.value='';o.textContent='Нет сохранений';sel.appendChild(o);}
+  else for(const item of savedBlds){const o=document.createElement('option');o.value=item.id;o.textContent=item.name||'Своя постройка';sel.appendChild(o);}
+  if(selectedId&&savedBlds.some(x=>x.id===selectedId))sel.value=selectedId;
+  $('bldLoadSaved').disabled=!savedBlds.length;$('bldDeleteSaved').disabled=!savedBlds.length;
+}
+function persistBld(){
+  const payload=makeBldPayload();if(!payload.grid.some(v=>v!==0))throw new Error('Сначала нарисуйте постройку');
+  const list=readSavedBlds(),same=list.findIndex(x=>(x.name||'').toLocaleLowerCase()===payload.name.toLocaleLowerCase());
+  payload.id=same>=0?list[same].id:('bld_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8));
+  if(same>=0)list[same]=payload;else list.push(payload);
+  const compact=list.slice(-30);
+  try{localStorage.setItem(BLD_STORAGE_KEY,JSON.stringify(compact));}
+  catch(_){throw new Error('Браузер не разрешил сохранить данные. Скачайте JSON как резервную копию.');}
+  savedBlds=compact;refreshSavedBlds(payload.id);return payload;
+}
+function downloadBldPayload(payload){
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=((payload.name||'building').replace(/[^a-zа-яё0-9_-]+/gi,'_').replace(/^_+|_+$/g,'')||'building')+'.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function placeBldOnScene(){
+  const cells=extractBld();if(!cells){bldNotice('Постройка пустая');return;}
+  const key='cb_'+Date.now(),name=(($('bldname').value||'Своя постройка').trim()||'Своя постройка');
+  SCENES[key]={n:name,f(){organLabels=[];for(let i=0;i<cells.length;i+=3)putCell(205+cells[i],LY-2+cells[i+1],cells[i+2],LY-2+cells[i+1]>=LY-4&&!isBio(cells[i+2]));}};
+  addSceneBtn(key,name);$('bldr').classList.remove('open');loadScene(key);
+}
 $('bldstamp').onclick=()=>{const a=extractBld();if(a){customStampCells=a;tool='stamp';stampType='custom';refreshActive();$('bldr').classList.remove('open');}};
-$('bldsave').onclick=()=>{const a=extractBld();if(!a)return;const k='cb_'+Date.now(),n=($('bldname').value||'Своя постройка').trim();SCENES[k]={n,f(){organLabels=[];for(let i=0;i<a.length;i+=3)putCell(205+a[i],LY-2+a[i+1],a[i+2],LY-2+a[i+1]>=LY-4&&!isBio(a[i+2]));}};addSceneBtn(k,n);$('bldr').classList.remove('open');loadScene(k);};
+$('bldsave').onclick=()=>{try{const d=persistBld();bldNotice('Сохранено: '+d.name);}catch(err){bldNotice(err.message);}};
+$('bldplace').onclick=placeBldOnScene;
+$('bldexport').onclick=async()=>{
+  const text=JSON.stringify(makeBldPayload(),null,2);
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(text);bldNotice('Код скопирован');return;}
+    throw new Error('clipboard unavailable');
+  }catch(_){
+    const ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+    let ok=false;try{ok=document.execCommand('copy');}catch(__){}ta.remove();
+    if(ok)bldNotice('Код скопирован');else{prompt('Скопируйте JSON-код постройки:',text);bldNotice('Код готов к копированию');}
+  }
+};
+$('bldimport').onclick=async()=>{
+  let text='';
+  try{if(navigator.clipboard&&navigator.clipboard.readText)text=await navigator.clipboard.readText();}catch(_){}
+  if(text.trim()){
+    try{const d=applyBldPayload(text);bldNotice('Вставлено из буфера: '+d.name);return;}catch(_){}
+  }
+  text=prompt('Вставьте сюда JSON-код постройки:');if(text===null)return;
+  try{const d=applyBldPayload(text);bldNotice('Загружено: '+d.name);}catch(err){alert('Не удалось вставить постройку: '+err.message);bldNotice('Ошибка вставки');}
+};
+$('bldfiledl').onclick=()=>downloadBldPayload(makeBldPayload());
+$('bldfileul').onclick=()=>$('bldfileinp').click();
+$('bldfileinp').onchange=async e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  try{const d=applyBldPayload(await file.text());bldNotice('Загружено: '+d.name);}
+  catch(err){alert('Не удалось загрузить постройку: '+err.message);bldNotice('Ошибка загрузки');}
+  finally{e.target.value='';}
+};
+$('bldLoadSaved').onclick=()=>{
+  const item=readSavedBlds().find(x=>x.id===$('bldSavedSelect').value);if(!item)return;
+  try{const d=applyBldPayload(item);bldNotice('Открыто: '+d.name);}catch(err){alert('Сохранение повреждено: '+err.message);}
+};
+$('bldDeleteSaved').onclick=()=>{
+  const id=$('bldSavedSelect').value;if(!id)return;const item=readSavedBlds().find(x=>x.id===id);if(!item)return;
+  if(!confirm('Удалить сохранённую постройку «'+(item.name||'Своя постройка')+'»?'))return;
+  const list=readSavedBlds().filter(x=>x.id!==id);
+  try{localStorage.setItem(BLD_STORAGE_KEY,JSON.stringify(list));savedBlds=list;refreshSavedBlds(list.length?list[Math.max(0,list.length-1)].id:null);bldNotice('Сохранение удалено');}
+  catch(_){bldNotice('Не удалось удалить сохранение');}
+};
+refreshSavedBlds();
 
 addEventListener('keydown',e=>{
   if(e.target&&e.target.tagName==='INPUT')return;
